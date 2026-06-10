@@ -62,6 +62,13 @@ def signup_for_activity(activity_name: str, email: str):
     # Get the specific activity
     activity = activities[activity_name]
 
+# Validate student is not already signed up
+    # Normalize email and prevent duplicate signups
+    normalized_email = email.strip().lower()
+    existing = [p.strip().lower() for p in activity.get("participants", [])]
+    if normalized_email in existing:
+        raise HTTPException(status_code=400, detail="Student already signed up for this activity")
+
     # Add student
-    activity["participants"].append(email)
-    return {"message": f"Signed up {email} for {activity_name}"}
+    activity.setdefault("participants", []).append(normalized_email)
+    return {"message": f"Signed up {normalized_email} for {activity_name}"}
