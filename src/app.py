@@ -103,9 +103,10 @@ def signup_for_activity(activity_name: str, email: str):
 
 # Validate student is not already signed up 
     # Prevent duplicate signups 
-    if email in activity.get("participants", []):
+    email_normalizado = email.lower()
+    if email_normalizado in activity.get("participants", []):
         raise HTTPException(status_code=400, detail="Student already registered for this activity")
 
     # Add student
-    activity["participants"].append(email)
+    activity["participants"].append(email_normalizado)
     return {"message": f"Signed up {email} for {activity_name}"}
