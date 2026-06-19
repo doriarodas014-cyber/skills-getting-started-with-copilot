@@ -113,6 +113,8 @@ def signup_for_activity(activity_name: str, email: str):
     if email_normalizado in activity.get("participants", []):
         raise HTTPException(status_code=400, detail="Student already registered for this activity")
 
+# Validate student is not already signed up    if len(activity["participants"]) >= activity["max_participants"]:
+
     # Add student
     activity["participants"].append(email_normalizado)
     return {"message": f"Signed up {email} for {activity_name}"}
