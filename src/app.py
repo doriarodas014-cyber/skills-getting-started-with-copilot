@@ -1,10 +1,3 @@
-"""
-High School Management System API
-
-A super simple FastAPI application that allows students to view and sign up
-for extracurricular activities at Mergington High School.
-"""
-
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
@@ -17,9 +10,9 @@ app = FastAPI(title="Mergington High School API",
 # Mount the static files directory
 current_dir = Path(__file__).parent
 app.mount("/static", StaticFiles(directory=os.path.join(Path(__file__).parent,
-          "static")), name="static")
+    "static")), name="static")
 
-# In-memory activity database
+# In-memory activity database (4 activities total)
 activities = {
     "Chess Club": {
         "description": "Learn strategies and compete in chess tournaments",
@@ -27,48 +20,42 @@ activities = {
         "max_participants": 12,
         "participants": ["michael@mergington.edu", "daniel@mergington.edu"]
     },
-    "Programming Class": {
-        "description": "Learn programming fundamentals and build software projects",
-        "schedule": "Tuesdays and Thursdays, 3:30 PM - 4:30 PM",
-        "max_participants": 20,
-        "participants": ["emma@mergington.edu", "sophia@mergington.edu"]
+    "Coding Club": {
+        "description": "Learn programming and build cool projects",
+        "schedule": "Mondays, 4:00 PM - 5:30 PM",
+        "max_participants": 15,
+        "participants": []
     },
-    "Gym Class": {
-        "description": "Physical education and sports activities",
-        "schedule": "Mondays, Wednesdays, Fridays, 2:00 PM - 3:00 PM",
-        "max_participants": 30,
-        "participants": ["john@mergington.edu", "olivia@mergington.edu"]
+    "Music Ensemble": {
+        "description": "Practice and perform classical and modern music",
+        "schedule": "Wednesdays, 3:30 PM - 5:00 PM",
+        "max_participants": 20,
+        "participants": []
+    },
+    "Photography Club": {
+        "description": "Learn the basics of photography and lighting",
+        "schedule": "Thursdays, 4:00 PM - 5:00 PM",
+        "max_participants": 10,
+        "participants": []
     }
 }
 
-
-@app.get("/")
-def root():
-    return RedirectResponse(url="/static/index.html")
-
-
-@app.get("/activities")
-def get_activities():
-    return activities
-
-
 @app.post("/activities/{activity_name}/signup")
 def signup_for_activity(activity_name: str, email: str):
-    """Sign up a student for an activity"""
-    # Validate activity exists
     if activity_name not in activities:
         raise HTTPException(status_code=404, detail="Activity not found")
-
-    # Get the specific activity
+    
     activity = activities[activity_name]
-
-# Validate student is not already signed up
-    # Normalize email and prevent duplicate signups
-    normalized_email = email.strip().lower()
-    existing = [p.strip().lower() for p in activity.get("participants", [])]
-    if normalized_email in existing:
-        raise HTTPException(status_code=400, detail="Student already signed up for this activity")
-
-    # Add student
-    activity.setdefault("participants", []).append(normalized_email)
-    return {"message": f"Signed up {normalized_email} for {activity_name}"}
+    
+    # NORMALIZACIÓN: Convertimos el email ingresado a minúsculas para evitar duplicados por mayúsculas
+    email_normalizado = email.lower()
+    
+    # Validamos usando la versión en minúsculas
+    if email_normalizado in [p.lower() for p in activity.get("participants", [])]:
+        raise HTTPException(status_code=400, detail="Student already registered")
+        
+    if len(activity["participants"]) >= activity["max_participants"]:
+        raise HTTPException(status_code=400, detail="Activity is full")
+        
+    activity["participants"].append(email_normalizado)
+    return {"message": "Successfully signed up"}
